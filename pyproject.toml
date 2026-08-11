@@ -6,12 +6,16 @@ readme = "README.md"
 requires-python = ">=3.13"
 authors = [{ name = "Your Team" }]
 license = { text = "MIT" }
-dependencies = []
+dependencies = [
+  "psycopg[binary]>=3.2.0",
+  "python-dotenv>=1.0.0",
+]
 
 [project.optional-dependencies]
 dev = [
   "ruff>=0.8.0",
   "pre-commit>=3.0.0",
+  "pytest>=8.0.0",
 ]
 
 [tool.ruff]
@@ -28,6 +32,7 @@ indent-style = "space"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

@@ -1,157 +1,309 @@
-# 1. Visão Geral
+# Project Brief
 
-Esta plataforma tem como objetivo consolidar dados de uma operação brasileira de e-commerce em uma base analítica estruturada, confiável e reproduzível. O projeto representa a fundação de um ambiente de dados capaz de apoiar a tomada de decisão, a análise de negócio e o crescimento da organização.
+## 1. Visão Geral
 
-A proposta é construir uma plataforma que transforme dados dispersos e desconectados em uma camada analítica organizada, com foco em clareza, governança e evolução incremental.
+A Modern Data Platform é uma plataforma de dados construída de forma incremental para consolidar, organizar e disponibilizar dados de uma operação brasileira de e-commerce para análise.
+
+O projeto representa a construção de um ambiente de dados capaz de transformar dados provenientes de fontes externas em uma base estruturada, confiável e reproduzível, evoluindo progressivamente de uma camada RAW para modelos analíticos e mecanismos de orquestração, qualidade e observabilidade.
+
+O projeto é desenvolvido como um portfólio técnico, mas segue princípios de arquitetura, engenharia de dados e Analytics Engineering aplicáveis a ambientes profissionais.
+
+---
 
 # 2. Contexto do Negócio
 
-A empresa fictícia é uma operação brasileira de e-commerce com múltiplas fontes de dados distribuídas em diferentes sistemas e formatos. Atualmente, a informação necessária para decisões estratégicas e operacionais encontra-se fragmentada, dificultando a consolidação de visão analítica consistente.
+A empresa fictícia representada pelo projeto é uma operação brasileira de e-commerce com dados relacionados a pedidos, clientes, produtos, vendedores, pagamentos, avaliações e localização.
 
-O projeto representa a construção de uma plataforma de dados para reunir, organizar e disponibilizar essas informações de forma mais estruturada, permitindo maior qualidade de análise e apoio à decisão.
+Essas informações representam diferentes aspectos da operação comercial e podem ser utilizadas posteriormente para construção de análises e indicadores de negócio.
+
+O projeto utiliza o Brazilian E-Commerce Public Dataset by Olist como fonte pública para representar esse cenário.
+
+---
 
 # 3. Problema
 
-A plataforma resolve uma série de problemas operacionais e analíticos comuns em ambientes de dados ainda não consolidados:
+A plataforma busca representar problemas comuns em ambientes de dados ainda não consolidados:
 
-- dados distribuídos em diferentes fontes e sistemas;
-- ausência de padronização entre fontes de informação;
-- dificuldade de geração de indicadores confiáveis e consistentes;
-- baixa governança e rastreabilidade sobre os dados;
-- limitação na capacidade de responder com rapidez a perguntas de negócio.
+- dados distribuídos em diferentes estruturas;
+- ausência de uma camada central organizada;
+- dificuldade de garantir consistência e rastreabilidade;
+- necessidade de separar dados de origem de transformações analíticas;
+- dificuldade de evoluir pipelines de forma controlada;
+- necessidade de disponibilizar dados preparados para diferentes consumidores analíticos.
+
+---
 
 # 4. Objetivos
 
-Os objetivos deste projeto são:
+Os objetivos do projeto são:
 
-- consolidar dados provenientes de diferentes fontes;
-- construir uma camada analítica organizada e compreensível;
-- disponibilizar conjuntos de dados com maior confiabilidade para análise;
-- apoiar a criação de dashboards e relatórios futuros;
-- criar uma arquitetura que possa ser reproduzida localmente para desenvolvimento e validação.
+- consolidar dados provenientes de fontes externas;
+- preservar os dados de origem em uma camada RAW;
+- construir pipelines reproduzíveis de aquisição, validação e ingestão;
+- criar uma arquitetura modular e de baixo acoplamento;
+- evoluir os dados para camadas analíticas estruturadas;
+- aplicar práticas de Analytics Engineering na transformação dos dados;
+- preparar a plataforma para execução orquestrada;
+- estabelecer mecanismos progressivos de qualidade e observabilidade;
+- disponibilizar uma base para análises, dashboards e indicadores futuros.
+
+---
 
 # 5. Escopo
 
-Este projeto contempla as seguintes áreas:
+O projeto contempla, de forma incremental:
 
-- ingestão de dados;
-- armazenamento inicial da informação;
-- transformação e organização dos dados;
-- modelagem analítica em nível conceitual;
-- orquestração do fluxo de execução;
-- documentação da plataforma e do processo;
-- estrutura para testes e validação futura.
+- aquisição de dados;
+- validação estrutural;
+- ingestão;
+- armazenamento da camada RAW;
+- transformação e modelagem analítica;
+- testes de qualidade;
+- orquestração;
+- observabilidade;
+- documentação técnica;
+- automação de desenvolvimento e CI/CD;
+- estrutura para consumo analítico futuro.
+
+As funcionalidades são implementadas conforme o roadmap do projeto e não necessariamente estão todas disponíveis na versão atual.
+
+---
 
 # 6. Fora do Escopo
 
-Os seguintes itens não fazem parte deste projeto:
+Os seguintes itens não fazem parte do escopo planejado:
 
-- Spark;
-- Kafka;
+- Apache Spark;
+- Apache Kafka;
 - Kubernetes;
 - Terraform;
 - streaming em tempo real;
 - machine learning;
 - data lake distribuído;
-- implementação de soluções de negócio específicas não relacionadas à fundação da plataforma.
+- infraestrutura cloud complexa;
+- implementação de sistemas transacionais;
+- soluções de negócio específicas fora do contexto da plataforma de dados.
 
-# 7. Fontes de Dados
+Essas exclusões têm como objetivo manter o projeto focado em engenharia de dados, Analytics Engineering e evolução arquitetural incremental.
 
-Como referência, o projeto utilizará o dataset público brasileiro Olist como fonte de contexto para a estrutura da plataforma.
+---
 
-As fontes de dados disponíveis no dataset público incluem, entre outras, os arquivos públicos relacionados a:
+# 7. Fonte de Dados Atual
 
-- pedidos;
-- clientes;
-- produtos;
-- vendedores;
-- pagamentos;
-- avaliações;
-- geolocalização;
-- categorias;
-- itens de pedido.
+A fonte de dados atualmente utilizada é o:
 
-Este documento não modela os dados nem define relações específicas entre as tabelas. A intenção é apenas descrever as fontes disponíveis como referência inicial para a plataforma.
+**Brazilian E-Commerce Public Dataset by Olist**
 
-# 8. Consumidores da Plataforma
+Fonte pública:
 
-Os principais consumidores esperados da plataforma são:
+```text
+Kaggle
 
-- times de Marketing;
-- times de Produto;
-- área Financeira;
-- liderança executiva;
-- equipes analíticas internas.
+Versão configurada:
 
-# 9. Indicadores Esperados
+2
 
-Futuramente, a plataforma poderá apoiar a construção de indicadores como:
+A distribuição utilizada pelo projeto é um arquivo ZIP contendo nove arquivos CSV.
 
-- receita;
-- ticket médio;
-- clientes recorrentes;
-- tempo médio de entrega;
-- cancelamentos;
-- avaliações;
-- receita por categoria;
-- receita por estado.
+Os arquivos representam informações relacionadas a:
 
-Estes indicadores são apresentados como exemplos de uso analítico futuro e não implicam implementação imediata ou definição de cálculo neste documento.
+pedidos;
+clientes;
+produtos;
+vendedores;
+pagamentos;
+avaliações;
+itens de pedido;
+geolocalização;
+tradução de categorias.
 
-# 10. Arquitetura Conceitual
+A aquisição é automatizada pelo projeto e os arquivos são armazenados localmente em:
 
-O fluxo conceitual da plataforma pode ser descrito como:
+data/external/olist/
 
-Fontes de Dados
-↓
-Python
-↓
-PostgreSQL
-↓
-dbt
-↓
-Data Warehouse
-↓
-Power BI
+Os dados externos não são versionados pelo Git.
 
-Este trecho descreve apenas a lógica conceitual de fluxo e não detalha decisões técnicas específicas.
+O código responsável pela aquisição, validação e ingestão é versionado no repositório.
 
-# 11. Restrições Técnicas
+8. Consumidores da Plataforma
 
-As tecnologias obrigatórias consideradas para este projeto são:
+Os principais consumidores esperados são:
 
-- Python 3.13;
-- Docker;
-- PostgreSQL;
-- dbt;
-- Airflow;
-- GitHub Actions;
-- Ruff;
-- pre-commit.
+times de Marketing;
+times de Produto;
+área Financeira;
+liderança executiva;
+equipes de Analytics e Data;
+ferramentas de BI.
 
-# 12. Premissas
+Esses consumidores representam possibilidades futuras de uso da camada analítica e não implicam integrações já implementadas.
 
-As seguintes informações são hipóteses temporárias e poderão ser revisadas no futuro:
+9. Indicadores Esperados
 
-- a plataforma será desenvolvida inicialmente em ambiente local, com foco em reprodutibilidade;
-- o dataset Olist será utilizado como referência inicial para estruturação do projeto;
-- a arquitetura conceitual poderá ser ajustada conforme o escopo evoluir;
-- a definição exata de consumidores e indicadores pode ser refinada em etapas posteriores.
+A plataforma poderá futuramente apoiar análises relacionadas a:
 
-Estas premissas não devem ser tratadas como fatos definitivos e poderão ser alteradas conforme o projeto avance.
+receita;
+ticket médio;
+clientes recorrentes;
+tempo de entrega;
+cancelamentos;
+avaliações;
+receita por categoria;
+receita por estado;
+comportamento de pedidos;
+desempenho de vendedores e produtos.
 
-# 13. Roadmap de Alto Nível
+Os indicadores serão definidos e implementados nas camadas analíticas futuras.
 
-O projeto deverá evoluir em grandes fases, considerando progressão gradual e foco em valor real:
+Este documento não estabelece regras de cálculo ou definições métricas.
 
-1. estruturação inicial do repositório e documentação base;
-2. preparação do ambiente local e infraestrutura inicial;
-3. consolidação de fontes e organização dos dados;
-4. construção da camada analítica e modelagem inicial;
-5. orquestração, governança e evolução da plataforma.
+10. Arquitetura Conceitual
 
-# 14. Considerações Finais
+A evolução conceitual da plataforma segue:
 
-Este documento serve como referência de negócio e orientação estratégica para o projeto. Ele foi elaborado com foco em clareza, consistência e alinhamento arquitetural, sem introduzir implementação detalhada ou requisitos não confirmados.
+Data Sources
+      ↓
+Acquisition
+      ↓
+Validation
+      ↓
+RAW
+      ↓
+STAGING
+      ↓
+INTERMEDIATE
+      ↓
+MARTS
+      ↓
+Analytics / BI
 
-Ele deverá ser utilizado como base para as decisões futuras do projeto, com a possibilidade de revisão conforme novas informações forem definidas.
+A orquestração será adicionada posteriormente:
+
+                 Airflow
+                    │
+        ┌───────────┼───────────┐
+        ▼           ▼           ▼
+   Acquisition  Ingestion      dbt
+                    │           │
+                    ▼           ▼
+                   RAW        MARTS
+
+A arquitetura atual está limitada à aquisição, validação e ingestão da camada RAW.
+
+As camadas STAGING, INTERMEDIATE e MARTS, assim como a orquestração com Airflow, fazem parte da evolução planejada.
+
+11. Estado Atual
+
+A primeira etapa funcional da plataforma está concluída.
+
+Atualmente o projeto possui:
+
+infraestrutura local com Docker Compose;
+PostgreSQL 16;
+pgAdmin 4;
+aquisição automatizada do Olist;
+validação estrutural dos nove arquivos;
+contratos técnicos dos arquivos;
+serviço de ingestão;
+carga idempotente;
+schema raw;
+nove tabelas RAW;
+1.548.022 registros carregados;
+testes automatizados;
+lint e formatação;
+documentação técnica.
+
+A camada RAW preserva os valores da fonte e não aplica regras de negócio ou transformações analíticas.
+
+12. Restrições Técnicas
+
+As tecnologias atualmente utilizadas ou previstas para a evolução da plataforma incluem:
+
+Implementadas
+Python 3.13;
+uv;
+Docker;
+Docker Compose;
+PostgreSQL 16;
+pgAdmin 4;
+pytest;
+Ruff;
+pre-commit;
+Git;
+GitHub Actions.
+Planejadas
+dbt;
+Apache Airflow;
+evolução das camadas analíticas;
+data quality;
+observability;
+evolução de CI/CD.
+
+A adoção de novas tecnologias deverá ser justificada pela necessidade do projeto.
+
+13. Premissas
+
+As seguintes premissas orientam a evolução do projeto:
+
+o desenvolvimento inicial ocorre em ambiente local;
+a plataforma deve ser reproduzível;
+o dataset Olist representa o cenário inicial de negócio;
+a arquitetura poderá evoluir conforme novas necessidades forem identificadas;
+componentes futuros não devem ser implementados antes de serem necessários;
+a camada RAW deve preservar os dados de origem;
+transformações e regras de negócio devem ocorrer nas camadas analíticas;
+decisões arquiteturais relevantes devem ser documentadas.
+
+Estas premissas poderão ser revisadas conforme o projeto evoluir.
+
+14. Roadmap de Alto Nível
+
+A evolução da plataforma está organizada em etapas:
+
+Fundação do repositório — estrutura, documentação e convenções;
+Infraestrutura local — Docker, PostgreSQL e ambiente reproduzível;
+Ingestion Foundation — aquisição, validação e camada RAW;
+Transformation & Analytics Engineering — dbt e modelos analíticos;
+Orchestration — Apache Airflow;
+Data Quality & CI/CD — evolução da confiabilidade e automação;
+Observability & Analytics — monitoramento e consumo analítico.
+
+O detalhamento de cada etapa está disponível em ROADMAP.md.
+
+15. Considerações Finais
+
+Este documento define o contexto de negócio, os objetivos e o escopo da Modern Data Platform.
+
+Ele serve como referência para as decisões arquiteturais e técnicas do projeto, mas não substitui a documentação específica de arquitetura, implementação ou operação.
+
+A plataforma será desenvolvida incrementalmente, priorizando entregas funcionais, clareza arquitetural, reprodutibilidade e qualidade técnica.
+
+Novas tecnologias, camadas e capacidades serão incorporadas conforme exista uma necessidade concreta para sua adoção.
+
+
+### Agora a documentação fica bem amarrada
+
+Temos:
+
+```text
+PROJECT_BRIEF.md
+       │
+       │ O que estamos construindo?
+       ▼
+ARCHITECTURE.md
+       │
+       │ Como estamos construindo?
+       ▼
+ROADMAP.md
+       │
+       │ Em que ordem vamos evoluir?
+       ▼
+CHANGELOG.md
+       │
+       │ O que efetivamente entregamos?
+       ▼
+README.md
+       │
+       │ Visão pública resumida
+       ▼
+GitHub

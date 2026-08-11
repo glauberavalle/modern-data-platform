@@ -1,121 +1,406 @@
-# modern-data-platform
+# Modern Data Platform
 
-Este repositório é um projeto pessoal de portfólio, mas deve ser tratado como um produto interno de tecnologia, com foco em arquitetura, engenharia de software, organização, documentação, modelagem de dados e qualidade técnica.
+> Uma plataforma de dados local construída de forma incremental para demonstrar práticas de Data Engineering e Analytics Engineering, com foco em arquitetura, reprodutibilidade, qualidade e manutenibilidade.
 
-## Constituição do projeto
+Projeto pessoal de portfólio desenvolvido por Sprints, utilizando o **Brazilian E-Commerce Public Dataset by Olist** como primeira fonte de dados.
 
-- O objetivo não é apenas escrever código que funcione, mas demonstrar capacidade de projetar soluções robustas e bem organizadas.
-- O projeto será desenvolvido de forma incremental, entregando valor real a cada Sprint.
-- Evite over engineering e implemente apenas o necessário para a fase atual.
-- Sempre que uma melhoria arquitetural surgir, ela será avaliada antes de entrar no escopo.
-- A documentação e as decisões técnicas devem ter o mesmo padrão esperado em um projeto profissional.
+---
 
-## Objetivo
+## Overview
 
-O projeto estabelece a base estrutural para um ambiente de dados preparado para:
-- ingestão de dados em diferentes fontes;
-- transformação e modelagem progressiva;
-- orquestração de pipelines;
-- observabilidade e documentação;
-- evolução incremental do stack.
+O projeto tem como objetivo construir, de forma incremental, uma plataforma moderna de dados capaz de receber diferentes fontes, validar e armazenar dados, transformá-los em camadas analíticas e, posteriormente, orquestrar e monitorar seus pipelines.
 
-## Arquitetura
+A primeira etapa implementa uma pipeline funcional de aquisição, validação e ingestão do Olist em PostgreSQL.
 
-A arquitetura proposta segue uma abordagem modular, com separação entre:
-- ingestão;
-- transformação;
-- orquestração;
-- armazenamento analítico;
-- documentação e governança.
+A arquitetura foi projetada para permitir a evolução progressiva da plataforma, evitando complexidade desnecessária antes que ela seja necessária.
 
-Consulte [ARCHITECTURE.md](ARCHITECTURE.md) para detalhes do desenho de alto nível.
+---
 
-## Stack
+## Current Status
+
+### Ingestion Foundation — Implemented
+
+A primeira etapa funcional da plataforma está concluída.
+
+Atualmente o projeto possui:
+
+- infraestrutura local com Docker Compose;
+- PostgreSQL 16 e pgAdmin 4;
+- aquisição automatizada do dataset Olist;
+- validação estrutural dos nove CSVs;
+- contratos técnicos para os arquivos esperados;
+- ingestão idempotente;
+- schema `raw` no PostgreSQL;
+- nove tabelas RAW, uma por arquivo de origem;
+- dados preservados como `TEXT`, sem transformações analíticas;
+- **1.548.022 registros carregados**;
+- testes automatizados com pytest;
+- lint e formatação com Ruff;
+- configuração por variáveis de ambiente;
+- GitHub Actions;
+- documentação técnica e operacional.
+
+### Current Data Load
+
+A execução real da ingestão resultou nas seguintes contagens:
+
+| RAW Table | Records |
+|---|---:|
+| `olist_customers_dataset` | 99,441 |
+| `olist_geolocation_dataset` | 1,000,163 |
+| `olist_order_items_dataset` | 112,650 |
+| `olist_order_payments_dataset` | 103,886 |
+| `olist_order_reviews_dataset` | 99,224 |
+| `olist_orders_dataset` | 99,441 |
+| `olist_products_dataset` | 32,951 |
+| `olist_sellers_dataset` | 3,095 |
+| `product_category_name_translation` | 71 |
+| **Total** | **1,548,022** |
+
+As contagens foram verificadas diretamente no PostgreSQL utilizando `COUNT(*)` nas tabelas do schema `raw`.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+    K["Kaggle / Olist<br/>archive.zip"] --> A["Acquisition<br/>download_olist.py<br/>olist_acquirer.py"]
+    A --> E["data/external/olist<br/>9 CSVs originais"]
+    E --> V["Validation<br/>csv_validator.py<br/>contracts.py"]
+    V --> S["Ingestion Service<br/>service.py"]
+    S --> L["PostgreSQL Loader<br/>postgres_loader.py"]
+    L --> R[("PostgreSQL 16<br/>schema raw")]
+
+    R -. "Future" .-> D["dbt"]
+    D -. "Future" .-> M["Analytics Models"]
+    S -. "Future" .-> AF["Apache Airflow"]
+```
+
+A arquitetura separa aquisição, validação, coordenação do fluxo e carregamento.
+
+O fluxo atual termina na camada `raw`. **dbt** e **Apache Airflow** fazem parte da evolução planejada da plataforma e ainda não estão implementados.
+
+---
+
+## Data Flow
+
+```text
+Kaggle / Olist
+      ↓
+Acquisition
+      ↓
+External Files
+      ↓
+Validation
+      ↓
+Ingestion Service
+      ↓
+PostgreSQL RAW
+```
+
+Os CSVs originais são armazenados localmente em:
+
+```text
+data/external/olist/
+```
+
+Eles são validados antes da carga e carregados no PostgreSQL preservando os valores da fonte.
+
+---
+
+## Data Source
+
+| Item | Value |
+|---|---|
+| Dataset | Brazilian E-Commerce Public Dataset by Olist |
+| Source | [Kaggle](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) |
+| Configured version | `2` |
+| Distribution | `archive.zip` |
+| Expected files | 9 CSVs |
+
+A aquisição utiliza uma versão específica da fonte para aumentar a reprodutibilidade do pipeline.
+
+Quando os arquivos já estão disponíveis localmente e válidos, a aquisição pode reutilizá-los em vez de realizar um novo download.
+
+Os dados externos não são versionados pelo Git. **O código, as configurações, os testes e a documentação são versionados no repositório.**
+
+---
+
+## RAW Layer
+
+A camada `raw` representa a primeira camada de armazenamento da plataforma.
+
+Seu objetivo é preservar os dados provenientes da fonte antes das transformações analíticas.
+
+### RAW responsibilities
+
+- preservar os valores de origem;
+- manter a estrutura dos arquivos fonte;
+- representar cada arquivo como uma tabela RAW;
+- disponibilizar os dados para as próximas camadas.
+
+### RAW does not
+
+- aplicar regras de negócio;
+- calcular métricas ou KPIs;
+- realizar deduplicação;
+- criar relacionamentos analíticos;
+- enriquecer os dados;
+- realizar transformações analíticas.
+
+Essas responsabilidades serão tratadas nas camadas posteriores da plataforma.
+
+---
+
+## Tech Stack
+
+### Current
 
 - Python 3.13
 - uv
 - Docker
 - Docker Compose
-- PostgreSQL
-- dbt
-- Apache Airflow
+- PostgreSQL 16
+- pgAdmin 4
+- pytest
 - Ruff
 - pre-commit
+- Git
 - GitHub Actions
 
-## Roadmap
+### Planned
 
-A estratégia inicial está descrita em [ROADMAP.md](ROADMAP.md).
+- dbt para transformação e modelagem analítica;
+- Apache Airflow para orquestração;
+- evolução das camadas analíticas;
+- data quality;
+- observability;
+- evolução de CI/CD.
 
-## Instalação
+---
 
-### Pré-requisitos
+## Project Structure
 
-- Docker e Docker Compose instalados
+```text
+modern-data-platform/
+│
+├── .github/
+│   └── workflows/             # CI/CD
+│
+├── airflow/                   # Orquestração futura
+│
+├── data/
+│   └── external/
+│       └── olist/             # Dados externos locais, não versionados
+│
+├── dbt/                       # Transformações futuras
+│
+├── docs/                      # Documentação técnica
+│
+├── scripts/
+│   ├── download_olist.py      # Aquisição do dataset
+│   └── ingest_olist.py        # Execução da ingestão
+│
+├── src/
+│   ├── config.py              # Configuração
+│   ├── logging_config.py      # Configuração de logs
+│   └── ingestion/
+│       ├── acquisition/       # Aquisição
+│       ├── validation/        # Validação
+│       ├── loading/           # Carga
+│       ├── contracts.py       # Contratos
+│       └── service.py         # Coordenação da ingestão
+│
+├── tests/
+│   └── ingestion/             # Testes automatizados
+│
+├── warehouse/                 # Artefatos analíticos futuros
+│
+├── ARCHITECTURE.md
+├── AGENTS.md
+├── PROJECT_BRIEF.md
+├── ROADMAP.md
+├── docker-compose.yml
+├── Makefile
+├── pyproject.toml
+└── README.md
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+
 - Git
+- Docker Desktop
+- Python 3.13
+- uv
 
-### Passos iniciais
+### 1. Clone
 
-1. Clone o repositório.
-2. Copie o arquivo [.env.example](.env.example) para `.env` localmente.
-3. Ajuste as variáveis de ambiente, se necessário.
-4. Inicie a infraestrutura local:
+```bash
+git clone https://github.com/glauberavalle/modern-data-platform.git
+cd modern-data-platform
+```
+
+### 2. Configure environment
+
+Unix/Linux ou Git Bash:
+
+```bash
+cp .env.example .env
+```
+
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+### 3. Start infrastructure
 
 ```bash
 docker compose up -d
 ```
 
-Como alternativa, use `make setup` para criar o `.env` e `make docker-up` para iniciar os serviços.
+Isso inicia:
 
-### Serviços disponíveis
+- PostgreSQL 16;
+- pgAdmin 4.
 
-- PostgreSQL: `localhost:5432`
-- pgAdmin: `http://localhost:5050`
+### 4. Acquire Olist dataset
 
-Credenciais padrão do pgAdmin são definidas no arquivo [.env.example](.env.example). Para acessar o PostgreSQL, use as mesmas credenciais definidas no `.env`.
+```bash
+uv run python -m scripts.download_olist
+```
 
-### Registrar o PostgreSQL no pgAdmin
+### 5. Run RAW ingestion
 
-O pgAdmin é iniciado sem conexões pré-configuradas. Após autenticar-se, registre um servidor com os valores abaixo. O hostname deve ser o nome do serviço Docker, pois os dois containers compartilham a rede interna.
+```bash
+uv run python -m scripts.ingest_olist
+```
 
-- **Name**: `PostgreSQL local` (ou outro nome de sua escolha)
-- **Host name/address**: `postgres`
-- **Port**: `5432`
-- **Maintenance database**: valor de `POSTGRES_DB`
-- **Username**: valor de `POSTGRES_USER`
-- **Password**: valor de `POSTGRES_PASSWORD`
+O pipeline irá:
 
-Nenhuma tabela, schema ou dado inicial é criado por esta Sprint.
+1. adquirir ou reutilizar os arquivos do Olist;
+2. validar os nove CSVs esperados;
+3. criar o schema `raw`, se necessário;
+4. criar as tabelas RAW;
+5. carregar os dados no PostgreSQL.
 
-### Comandos úteis
+### Local Services
+
+| Service | Address |
+|---|---|
+| PostgreSQL | `localhost:5432` |
+| pgAdmin | `http://localhost:5050` |
+
+---
+
+## Development
+
+Principais comandos disponíveis:
 
 ```bash
 make setup
 make docker-up
 make docker-down
-make docker-restart
 make docker-status
 make docker-logs
-make docker-config
+make download-olist
+make ingest-olist
+make lint
+make format
 ```
 
-## Estrutura do repositório
+Em ambientes sem `make`, os scripts Python podem ser executados diretamente com `uv`.
 
-- [src/](src/) para componentes de aplicação e utilidades;
-- [airflow/](airflow/) para orquestração;
-- [dbt/](dbt/) para modelos e documentação;
-- [warehouse/](warehouse/) para artefatos de armazenamento;
-- [docs/](docs/) para documentação adicional;
-- [tests/](tests/) para testes futuros;
-- [scripts/](scripts/) para automações e utilidades.
+---
 
-## Próximos passos
+## Testing
 
-Este repositório está preparado para receber:
-- definições de infraestrutura;
-- pipelines de ingestão;
-- modelos dbt;
-- DAGs do Airflow;
-- automações de qualidade e CI/CD.
+Os testes estão organizados de acordo com as responsabilidades da aplicação:
 
-> Nenhuma regra de negócio ou lógica operacional foi implementada neste momento.
+```text
+tests/
+└── ingestion/
+    ├── acquisition/
+    ├── validation/
+    └── loading/
+```
+
+A implementação atual possui testes automatizados para os componentes de aquisição, validação e ingestão.
+
+---
+
+## Engineering Principles
+
+O projeto segue alguns princípios técnicos:
+
+- separação clara de responsabilidades;
+- evolução incremental;
+- reprodutibilidade;
+- idempotência;
+- preservação dos dados de origem;
+- testes automatizados;
+- documentação como parte da entrega;
+- evitar over engineering;
+- decisões arquiteturais orientadas pela necessidade real.
+
+---
+
+## Roadmap
+
+A plataforma está sendo construída incrementalmente.
+
+### Completed
+
+- fundação do repositório;
+- infraestrutura local;
+- PostgreSQL e pgAdmin;
+- aquisição automatizada do Olist;
+- validação dos arquivos;
+- ingestão RAW;
+- testes iniciais;
+- documentação técnica.
+
+### Next
+
+- transformação e modelagem com dbt;
+- criação das camadas analíticas;
+- orquestração com Airflow;
+- evolução dos testes de qualidade;
+- observabilidade;
+- camada analítica para consumo dos dados.
+
+O roadmap completo está disponível em [`ROADMAP.md`](ROADMAP.md).
+
+---
+
+## Documentation
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — arquitetura de alto nível;
+- [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md) — contexto e escopo;
+- [`ROADMAP.md`](ROADMAP.md) — evolução planejada;
+- [`AGENTS.md`](AGENTS.md) — princípios e convenções de desenvolvimento;
+- [`docs/`](docs/) — documentação técnica detalhada.
+
+---
+
+## Project Status
+
+**Current milestone: Ingestion Foundation**
+
+A primeira pipeline funcional está concluída e validada com dados reais.
+
+O projeto continua em desenvolvimento, com a próxima etapa direcionada à transformação e modelagem analítica.
+
+---
+
+## License
+
+Projeto pessoal de portfólio.
+
+Consulte [`LICENSE`](LICENSE) para os termos aplicáveis.

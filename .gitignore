@@ -31,6 +31,16 @@ airflow/.pytest_cache/
 # Docker
 *.local
 
+# Local datasets and processing artifacts
+data/external/**
+!data/external/.gitkeep
+!data/external/olist/
+!data/external/olist/.gitkeep
+data/raw/**
+!data/raw/.gitkeep
+data/processed/**
+!data/processed/.gitkeep
+
 # IDEs
 .vscode/
 .idea/

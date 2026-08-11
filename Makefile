@@ -1,11 +1,14 @@
-.PHONY: help setup lint format precommit docker-up docker-down docker-restart docker-logs docker-status docker-config
+.PHONY: help setup lint format precommit test download-olist ingest-olist docker-up docker-down docker-restart docker-logs docker-status docker-config
 
 help:
 	@echo "Available commands:"
 	@echo "  make setup        Create a local .env from .env.example"
 	@echo "  make lint         Run Ruff checks"
 	@echo "  make format       Format Python files with Ruff"
-	@echo "  make precommit    Install and run pre-commit hooks"
+	@echo "  make precommit    Run pre-commit hooks"
+	@echo "  make test         Run the test suite"
+	@echo "  make download-olist Download the Olist source CSV files"
+	@echo "  make ingest-olist Validate and load Olist CSV files into PostgreSQL RAW"
 	@echo "  make docker-up    Start local services"
 	@echo "  make docker-down  Stop local services"
 	@echo "  make docker-restart Restart local services"
@@ -17,13 +20,22 @@ setup:
 	@if [ ! -f .env ]; then cp .env.example .env; echo "Created .env from .env.example"; else echo ".env already exists"; fi
 
 lint:
-	@echo "Placeholder for Ruff linting."
+	uv run --extra dev ruff check .
 
 format:
-	@echo "Placeholder for Ruff formatting."
+	uv run --extra dev ruff format .
 
 precommit:
-	@echo "Placeholder for pre-commit hook installation and execution."
+	uv run --extra dev pre-commit run --all-files
+
+test:
+	uv run --extra dev pytest
+
+download-olist:
+	uv run python -m scripts.download_olist
+
+ingest-olist:
+	uv run python -m scripts.ingest_olist
 
 docker-up:
 	docker compose up -d
