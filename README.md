@@ -8,9 +8,9 @@ Projeto pessoal de portfólio utilizando o **Brazilian E-Commerce Public Dataset
 
 ## Overview
 
-O objetivo do projeto é construir uma plataforma de dados moderna de forma incremental, começando pela aquisição, validação e armazenamento dos dados e evoluindo posteriormente para transformação, modelagem analítica, orquestração e consumo.
+O objetivo do projeto é construir uma plataforma de dados de forma incremental, começando pela aquisição, validação e armazenamento dos dados e evoluindo para transformação, modelagem analítica e consumo.
 
-A primeira milestone funcional já está concluída: uma pipeline reproduzível que adquire o dataset Olist, valida os arquivos e realiza a ingestão em uma camada RAW no PostgreSQL.
+A fundação de ingestão já está implementada e validada com dados reais. A camada RAW preserva os dados de origem no PostgreSQL, enquanto o **dbt foi introduzido como camada de transformação e modelagem**, iniciando pelo staging.
 
 O projeto prioriza **separação de responsabilidades, reprodutibilidade, idempotência e evolução sem over engineering**.
 
@@ -36,7 +36,35 @@ A primeira etapa funcional foi implementada e validada com dados reais.
 
 As contagens foram verificadas diretamente no PostgreSQL utilizando `COUNT(*)`.
 
-### Current Data Load
+### dbt Staging Foundation — Completed
+
+A primeira camada de transformação foi implementada com dbt.
+
+- ✅ dbt Core com adapter PostgreSQL
+- ✅ 9 sources correspondentes às tabelas RAW
+- ✅ 9 modelos de staging
+- ✅ Staging materializado como views
+- ✅ Transformações técnicas e tipagem
+- ✅ Testes nativos do dbt
+- ✅ Lineage entre RAW e staging
+- ✅ `dbt build` validado contra o PostgreSQL local
+
+O dbt não substitui a ingestão Python. A responsabilidade permanece separada:
+
+```text
+Python → aquisição, validação e ingestão
+dbt    → transformação, testes e modelagem
+```
+
+### Next — Analytical Modeling
+
+O próximo estágio será definir um problema analítico e construir uma primeira camada de modelos de negócio/marts para entregar uma solução concreta.
+
+A modelagem ainda não foi implementada.
+
+---
+
+## Current Data Load
 
 | RAW Table | Records |
 |---|---:|
@@ -64,20 +92,59 @@ Kaggle / Olist
       ↓
 Acquisition
       ↓
-data/external/olist/
-      ↓
 Validation
       ↓
-Ingestion Service
-      ↓
 PostgreSQL RAW
+      ↓
+dbt Sources
+      ↓
+dbt Staging
 ```
 
-A aquisição, a validação e a carga são componentes separados.
+A aquisição, validação, ingestão e transformação são responsabilidades separadas.
 
-O fluxo atual inclui modelos dbt de staging sobre o schema `raw`.
+A camada RAW preserva os dados de origem. O dbt consome essas tabelas como sources e constrói os modelos de staging.
 
-**dbt está implementado para staging; Apache Airflow continua futuro.**
+O fluxo atual termina no staging.
+
+### Next Flow
+
+```text
+RAW
+ ↓
+STAGING
+ ↓
+Analytical Modeling
+ ↓
+MART
+ ↓
+Future Analytics / BI
+```
+
+A camada de mart ainda não foi implementada.
+
+**Apache Airflow permanece planejado para uma etapa futura de orquestração.**
+
+---
+
+## Why dbt?
+
+A camada RAW é responsável por preservar os dados de origem e não deve concentrar regras de transformação ou lógica analítica.
+
+À medida que a plataforma evolui, consultas diretamente sobre a RAW podem levar à repetição de transformações, joins e regras entre diferentes análises.
+
+O dbt foi introduzido para criar uma camada de transformação organizada, permitindo:
+
+- modelagem SQL versionada;
+- dependências entre modelos;
+- testes de dados;
+- documentação;
+- lineage;
+- separação entre dados de origem e modelos analíticos.
+
+Nesta etapa, o dbt foi utilizado para construir a camada de **staging**, mantendo as transformações estritamente técnicas.
+
+A modelagem de negócio será construída em uma etapa posterior.
 
 ---
 
@@ -88,16 +155,29 @@ O fluxo atual inclui modelos dbt de staging sobre o schema `raw`.
 Cada etapa possui uma responsabilidade específica:
 
 ```text
-Acquisition → Validation → Loading
+Acquisition → Validation → Loading → Transformation
 ```
 
-A aquisição não acessa o banco de dados, a validação não modifica os dados e o carregamento não aplica regras de negócio.
+A aquisição não acessa o banco de dados, a validação não modifica os dados, a ingestão preserva a origem e o dbt realiza as transformações posteriores.
 
 ### RAW Preserves the Source
 
 A camada `raw` representa a origem dos dados.
 
 Os valores são carregados sem limpeza, enriquecimento, métricas ou regras de negócio.
+
+### Staging Prepares the Data
+
+A camada `staging` é construída pelo dbt a partir das sources RAW.
+
+Nesta etapa são realizadas transformações técnicas, como:
+
+- conversão de tipos;
+- tratamento técnico de valores vazios;
+- padronização de nomes;
+- preparação dos dados para as próximas camadas.
+
+Regras de negócio e métricas não fazem parte do staging atual.
 
 ### Idempotency
 
@@ -140,19 +220,21 @@ O código, configuração, testes e documentação são versionados no repositó
 - Docker Compose
 - PostgreSQL 16
 - pgAdmin 4
+- dbt Core
+- dbt-postgres 1.11.0
 - pytest
 - Ruff
 - pre-commit
 - Git
 - GitHub Actions
-- dbt-postgres 1.11.0
 
 ### Planned
 
+- **Analytical Modeling / Marts** — primeira camada de negócio
 - **Apache Airflow** — orquestração
-- Data Quality
+- Data Quality avançada
 - Observability
-- Camadas analíticas e consumo de dados
+- Camada de consumo analítico
 
 ---
 
@@ -165,23 +247,27 @@ modern-data-platform/
 │   └── workflows/             # CI
 │
 ├── airflow/                   # Orquestração futura
-├── dbt/                       # Sources e modelos staging implementados
+├── dbt/
+│   ├── dbt_project.yml
+│   ├── profiles.yml
+│   └── models/
+│       └── staging/            # Sources e modelos staging
 │
 ├── data/
 │   └── external/
-│       └── olist/             # Dados externos locais
+│       └── olist/              # Dados externos locais
 │
 ├── docs/
 │   ├── assets/
-│   │   └── architecture.png   # Diagrama da arquitetura
+│   │   └── architecture.png    # Diagrama da arquitetura
 │   ├── project-overview.md
 │   ├── olist-acquisition.md
-│   └── raw-layer.md
+│   ├── raw-layer.md
 │   └── dbt-foundation.md
 │
 ├── scripts/
-│   ├── download_olist.py      # Aquisição
-│   └── ingest_olist.py        # Ingestão
+│   ├── download_olist.py       # Aquisição
+│   └── ingest_olist.py         # Ingestão
 │
 ├── src/
 │   ├── config.py
@@ -196,7 +282,7 @@ modern-data-platform/
 ├── tests/
 │   └── ingestion/
 │
-├── warehouse/                 # Artefatos analíticos futuros
+├── warehouse/                  # Artefatos analíticos futuros
 │
 ├── ARCHITECTURE.md
 ├── PROJECT_BRIEF.md
@@ -270,6 +356,20 @@ O pipeline irá:
 4. criar as tabelas RAW;
 5. carregar os dados no PostgreSQL.
 
+### 6. Build dbt models
+
+```bash
+uv run dbt debug --project-dir dbt --profiles-dir dbt
+uv run dbt build --project-dir dbt --profiles-dir dbt
+```
+
+O dbt irá:
+
+1. conectar ao PostgreSQL;
+2. identificar as sources RAW;
+3. construir os modelos de staging;
+4. executar os testes declarados.
+
 ### Local Services
 
 | Service | Address |
@@ -281,17 +381,16 @@ O pipeline irá:
 
 ## Testing
 
-Os testes estão organizados de acordo com as responsabilidades da aplicação:
+Os testes Python estão organizados de acordo com as responsabilidades da aplicação:
 
 ```text
 tests/
 └── ingestion/
     ├── acquisition/
-    ├── validation/
-    └── loading/
+    └── validation/
 ```
 
-A implementação atual possui testes automatizados para **aquisição e validação**.
+A implementação atual possui testes automatizados para aquisição e validação.
 
 Execução:
 
@@ -299,11 +398,20 @@ Execução:
 uv run pytest
 ```
 
-Também podem ser executados:
+Validações adicionais:
 
 ```bash
 uv run ruff format --check .
 uv run ruff check .
+pre-commit run --all-files
+git diff --check
+```
+
+Para validar a camada dbt:
+
+```bash
+uv run dbt debug --project-dir dbt --profiles-dir dbt
+uv run dbt build --project-dir dbt --profiles-dir dbt
 ```
 
 ---
@@ -323,11 +431,14 @@ make docker-logs
 make download-olist
 make ingest-olist
 
+make dbt-debug
+make dbt-build
+
 make lint
 make format
 ```
 
-Em ambientes sem `make`, os scripts Python podem ser executados diretamente com `uv`.
+Em ambientes sem `make`, os scripts Python e comandos dbt podem ser executados diretamente com `uv`.
 
 ---
 
@@ -341,17 +452,25 @@ Em ambientes sem `make`, os scripts Python podem ser executados diretamente com 
 - aquisição automatizada do Olist;
 - validação dos arquivos;
 - ingestão RAW;
-- testes iniciais;
+- dbt foundation;
+- sources RAW;
+- modelos staging;
+- testes dbt;
 - documentação técnica.
 
 ### Next
 
-- transformação e modelagem com dbt;
-- criação das camadas analíticas;
+- definição de um problema analítico;
+- modelagem das entidades necessárias;
+- criação da primeira camada de marts;
+- entrega de uma solução analítica concreta.
+
+### Future
+
 - orquestração com Airflow;
-- evolução dos testes de qualidade;
+- evolução da qualidade de dados;
 - observabilidade;
-- camada analítica para consumo dos dados.
+- novas camadas e domínios analíticos.
 
 O roadmap completo está disponível em [`ROADMAP.md`](ROADMAP.md).
 
@@ -368,17 +487,20 @@ O roadmap completo está disponível em [`ROADMAP.md`](ROADMAP.md).
 | [`docs/project-overview.md`](docs/project-overview.md) | Visão detalhada do estado atual |
 | [`docs/olist-acquisition.md`](docs/olist-acquisition.md) | Processo de aquisição do Olist |
 | [`docs/raw-layer.md`](docs/raw-layer.md) | Responsabilidades da camada RAW |
+| [`docs/dbt-foundation.md`](docs/dbt-foundation.md) | Fundação e implementação do dbt |
 | [`docs/README.md`](docs/README.md) | Índice da documentação técnica |
 
 ---
 
 ## Project Status
 
-**Current milestone: Ingestion Foundation**
+**Current milestone: dbt Staging Foundation**
 
-A primeira pipeline funcional está concluída e validada com dados reais.
+A fundação de ingestão está concluída e validada com dados reais.
 
-O próximo estágio da plataforma será direcionado à **transformação e modelagem analítica com dbt**.
+A primeira camada de transformação com dbt também está implementada e validada contra o PostgreSQL local.
+
+O próximo estágio será definir um problema analítico e construir uma primeira camada de modelagem/marts que entregue uma solução concreta.
 
 O projeto continua em desenvolvimento e será evoluído de forma incremental.
 
