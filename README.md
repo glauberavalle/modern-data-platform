@@ -75,9 +75,9 @@ PostgreSQL RAW
 
 A aquisição, a validação e a carga são componentes separados.
 
-O fluxo atual termina no schema `raw`.
+O fluxo atual inclui modelos dbt de staging sobre o schema `raw`.
 
-**dbt e Apache Airflow ainda não estão implementados.**
+**dbt está implementado para staging; Apache Airflow continua futuro.**
 
 ---
 
@@ -145,10 +145,10 @@ O código, configuração, testes e documentação são versionados no repositó
 - pre-commit
 - Git
 - GitHub Actions
+- dbt-postgres 1.11.0
 
 ### Planned
 
-- **dbt** — transformação e modelagem analítica
 - **Apache Airflow** — orquestração
 - Data Quality
 - Observability
@@ -165,7 +165,7 @@ modern-data-platform/
 │   └── workflows/             # CI
 │
 ├── airflow/                   # Orquestração futura
-├── dbt/                       # Transformações futuras
+├── dbt/                       # Sources e modelos staging implementados
 │
 ├── data/
 │   └── external/
@@ -177,6 +177,7 @@ modern-data-platform/
 │   ├── project-overview.md
 │   ├── olist-acquisition.md
 │   └── raw-layer.md
+│   └── dbt-foundation.md
 │
 ├── scripts/
 │   ├── download_olist.py      # Aquisição

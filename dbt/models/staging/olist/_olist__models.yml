@@ -1,0 +1,89 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: Clientes com valores vazios padronizados como nulos.
+    columns:
+      - name: customer_id
+        data_tests: [not_null, unique]
+
+  - name: stg_geolocation
+    description: Geolocalização com coordenadas convertidas para valores numéricos.
+
+  - name: stg_order_items
+    description: Itens de pedido com quantidades, valores e datas tipados.
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+      - name: product_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_products')
+                field: product_id
+      - name: seller_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_sellers')
+                field: seller_id
+
+  - name: stg_order_payments
+    description: Pagamentos com sequência, parcelas e valor convertidos para tipos numéricos.
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+  - name: stg_order_reviews
+    description: Avaliações com nota e datas convertidas para tipos técnicos.
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
+
+  - name: stg_orders
+    description: Pedidos com campos temporais convertidos para timestamp.
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: customer_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
+
+  - name: stg_products
+    description: Produtos com medidas tipadas e aliases técnicos corrigidos.
+    columns:
+      - name: product_id
+        data_tests: [not_null, unique]
+
+  - name: stg_sellers
+    description: Vendedores com valores vazios padronizados como nulos.
+    columns:
+      - name: seller_id
+        data_tests: [not_null, unique]
+
+  - name: stg_product_category_translation
+    description: Traduções de categorias com valores vazios padronizados como nulos.
+    columns:
+      - name: product_category_name
+        data_tests: [not_null, unique]

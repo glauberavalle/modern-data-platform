@@ -280,7 +280,7 @@ Validation
       ↓
 PostgreSQL RAW
 
-O próximo estágio da arquitetura é a introdução da camada de transformação com dbt:
+O estágio atual da arquitetura inclui a camada de transformação técnica com dbt:
 
 RAW
  ↓

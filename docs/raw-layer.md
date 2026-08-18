@@ -106,7 +106,7 @@ Esse comportamento permite que a mesma fonte seja ingerida novamente de forma co
 
 Relação com o dbt
 
-Em uma sprint futura, o dbt consumirá as tabelas raw como fontes declaradas.
+O dbt consome as tabelas raw como sources declaradas e cria modelos técnicos no schema staging.
 
 A evolução esperada será:
 

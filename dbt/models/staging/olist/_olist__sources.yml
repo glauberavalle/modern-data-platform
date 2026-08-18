@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Tabelas de origem preservadas pela ingestão Python.
+    schema: "{{ env_var('RAW_SCHEMA') }}"
+    tables:
+      - name: olist_customers_dataset
+        description: Dados de clientes da fonte Olist.
+      - name: olist_geolocation_dataset
+        description: Referências geográficas da fonte Olist.
+      - name: olist_order_items_dataset
+        description: Itens de pedidos da fonte Olist.
+      - name: olist_order_payments_dataset
+        description: Pagamentos de pedidos da fonte Olist.
+      - name: olist_order_reviews_dataset
+        description: Avaliações de pedidos da fonte Olist.
+      - name: olist_orders_dataset
+        description: Pedidos da fonte Olist.
+      - name: olist_products_dataset
+        description: Produtos da fonte Olist.
+      - name: olist_sellers_dataset
+        description: Vendedores da fonte Olist.
+      - name: product_category_name_translation
+        description: Traduções de categorias de produto da fonte Olist.

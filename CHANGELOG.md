@@ -46,10 +46,16 @@ Todas as mudanças relevantes do projeto serão documentadas neste arquivo.
 
 ## [Unreleased]
 
+### Added
+
+- fundação dbt com adapter PostgreSQL;
+- declaração das nove tabelas RAW como dbt sources;
+- nove modelos staging materializados como views;
+- testes dbt de chaves e relacionamentos estruturais.
+
 ### Planned
 
-- transformação e modelagem analítica com dbt;
-- criação das camadas STAGING, INTERMEDIATE e MARTS;
+- criação das camadas INTERMEDIATE e MARTS;
 - orquestração dos pipelines com Apache Airflow;
 - evolução dos testes de qualidade;
 - observabilidade;

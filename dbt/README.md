@@ -1,10 +1,5 @@
-# dbt
+# dbt project
 
-This directory is intended for dbt project assets.
+This directory contains the dbt project responsible for technical transformations from PostgreSQL RAW to staging models.
 
-It will hold the structure for:
-- project configuration;
-- models;
-- macros;
-- snapshots;
-- documentation.
+Run `uv run dbt build --project-dir dbt --profiles-dir dbt` from the repository root to build and test the current staging layer.

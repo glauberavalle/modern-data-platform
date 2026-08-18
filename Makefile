@@ -1,4 +1,4 @@
-.PHONY: help setup lint format precommit test download-olist ingest-olist docker-up docker-down docker-restart docker-logs docker-status docker-config
+.PHONY: help setup lint format precommit test dbt-debug dbt-build download-olist ingest-olist docker-up docker-down docker-restart docker-logs docker-status docker-config
 
 help:
 	@echo "Available commands:"
@@ -7,6 +7,8 @@ help:
 	@echo "  make format       Format Python files with Ruff"
 	@echo "  make precommit    Run pre-commit hooks"
 	@echo "  make test         Run the test suite"
+	@echo "  make dbt-debug    Validate the dbt PostgreSQL connection"
+	@echo "  make dbt-build    Build and test dbt models"
 	@echo "  make download-olist Download the Olist source CSV files"
 	@echo "  make ingest-olist Validate and load Olist CSV files into PostgreSQL RAW"
 	@echo "  make docker-up    Start local services"
@@ -30,6 +32,12 @@ precommit:
 
 test:
 	uv run --extra dev pytest
+
+dbt-debug:
+	uv run dbt debug --project-dir dbt --profiles-dir dbt
+
+dbt-build:
+	uv run dbt build --project-dir dbt --profiles-dir dbt
 
 download-olist:
 	uv run python -m scripts.download_olist
